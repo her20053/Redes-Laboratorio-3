@@ -1,3 +1,6 @@
+const fs = require('fs');
+
+
 class Graph {
 
     constructor() {
@@ -137,9 +140,25 @@ class Graph {
         };
     }
 
+    // Función para exportar el grafo a JSON
+    exportToJSON() {
+        let jsonGraph = {
+            nodes: [...this.nodes.keys()],
+            edges: []
+        };
 
+        this.nodes.forEach((connections, node) => {
+            connections.forEach(connection => {
+                // Para evitar duplicados, solo agregamos la arista si el nodo de inicio es menor que el nodo final
+                if (node < connection.node) {
+                    jsonGraph.edges.push({ from: node, to: connection.node, weight: connection.weight });
+                }
+            });
+        });
 
-
+        // Guardar el JSON en un archivo
+        fs.writeFileSync('graph.json', JSON.stringify(jsonGraph, null, 2));
+    }
 
 }
 
@@ -174,10 +193,11 @@ graph.addEdge('Nodo13', 'Nodo14', 7);
 graph.addEdge('Nodo13', 'Nodo15', 4);
 graph.addEdge('Nodo14', 'Nodo15', 2);
 
-
+// Exportar el grafo a un archivo JSON
+graph.exportToJSON();
 
 let nodo_de_inicio = 'Nodo1';
-let nodo_de_busqueda = 'Nodo6';
+let nodo_de_busqueda = 'Nodo10';
 
 console.log("Utilizando Dijkstra, la ruta optima desde " + nodo_de_inicio + " hasta " + nodo_de_busqueda + " es:");
 const dijkstra_solution = graph.dijkstra(nodo_de_inicio);
