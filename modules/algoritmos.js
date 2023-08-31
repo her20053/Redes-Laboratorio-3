@@ -68,78 +68,6 @@ class Graph {
         return path.reverse();
     }
 
-
-    flooding(startNode) {
-        let queue = [{ node: startNode, path: [startNode], cost: 0 }];
-        let paths = {};
-
-        while (queue.length > 0) {
-            let current = queue.shift();
-            let currentNode = current.node;
-            let currentPath = current.path;
-            let currentCost = current.cost;
-
-            let neighbors = this.nodes.get(currentNode);
-            for (let neighbor of neighbors) {
-                if (!currentPath.includes(neighbor.node)) {
-                    queue.push({
-                        node: neighbor.node,
-                        path: [...currentPath, neighbor.node],
-                        cost: currentCost + neighbor.weight
-                    });
-                }
-            }
-
-            if (!paths[currentNode]) {
-                paths[currentNode] = [];
-            }
-            paths[currentNode].push({ path: currentPath, cost: currentCost });
-        }
-
-        return paths;
-    }
-
-    distanceVectorRouting(startNode, targetNode) {
-        // Inicializar la tabla de enrutamiento para todos los nodos
-        let routingTable = {};
-        for (let node of this.nodes.keys()) {
-            routingTable[node] = {
-                distance: node === startNode ? 0 : Infinity,
-                nextHop: node === startNode ? startNode : null
-            };
-        }
-
-        let hasUpdates = true;
-        while (hasUpdates) {
-            hasUpdates = false;
-
-            for (let currentNode of this.nodes.keys()) {
-                for (let neighbor of this.nodes.get(currentNode)) {
-                    // Si la distancia a un vecino + la distancia del vecino al destino es menor
-                    // que la distancia conocida, actualizamos la tabla de enrutamiento
-                    if (routingTable[currentNode].distance + neighbor.weight < routingTable[neighbor.node].distance) {
-                        routingTable[neighbor.node].distance = routingTable[currentNode].distance + neighbor.weight;
-                        routingTable[neighbor.node].nextHop = currentNode;
-                        hasUpdates = true;
-                    }
-                }
-            }
-        }
-
-        // Construir la ruta a partir de la tabla de enrutamiento
-        let node = targetNode;
-        let path = [node];
-        while (node !== startNode) {
-            node = routingTable[node].nextHop;
-            path.unshift(node);
-        }
-
-        return {
-            path: path,
-            distance: routingTable[targetNode].distance
-        };
-    }
-
     // Función para exportar el grafo a JSON
     exportToJSON() {
         let jsonGraph = {
@@ -170,7 +98,7 @@ for (let i = 1; i <= 15; i++) {
     graph.addNode(`Nodo${i}`);
 }
 
-// Agregando algunas aristas
+// Aristas existentes
 graph.addEdge('Nodo1', 'Nodo2', 4);
 graph.addEdge('Nodo1', 'Nodo3', 2);
 graph.addEdge('Nodo2', 'Nodo3', 5);
@@ -193,11 +121,12 @@ graph.addEdge('Nodo13', 'Nodo14', 7);
 graph.addEdge('Nodo13', 'Nodo15', 4);
 graph.addEdge('Nodo14', 'Nodo15', 2);
 
+
 // Exportar el grafo a un archivo JSON
 graph.exportToJSON();
 
 let nodo_de_inicio = 'Nodo1';
-let nodo_de_busqueda = 'Nodo10';
+let nodo_de_busqueda = 'Nodo4';
 
 console.log("Utilizando Dijkstra, la ruta optima desde " + nodo_de_inicio + " hasta " + nodo_de_busqueda + " es:");
 const dijkstra_solution = graph.dijkstra(nodo_de_inicio);
