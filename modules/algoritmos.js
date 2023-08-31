@@ -16,6 +16,7 @@ class Graph {
         this.nodes.get(node2).push({ node: node1, weight: weight });  // Para grafo no dirigido
     }
 
+    // Función para el algoritmo Dijkstra
     dijkstra(startNode) {
         let distances = {};
         let visited = new Set();
@@ -59,14 +60,7 @@ class Graph {
         return routes;
     }
 
-    // Función auxiliar para construir la ruta utilizando los predecesores
-    _buildPath(predecessors, startNode, endNode) {
-        let path = [endNode];
-        while (path[path.length - 1] !== startNode) {
-            path.push(predecessors[path[path.length - 1]]);
-        }
-        return path.reverse();
-    }
+    
     // Función para el algoritmo Flooding
     flooding(startNode) {
         let queue = [{ node: startNode, path: [startNode], cost: 0 }];
@@ -96,6 +90,57 @@ class Graph {
         }
 
         return paths;
+    }
+
+    // Función para el algoritmo Distance Vector Routing
+    distanceVectorRouting(startNode, targetNode) {
+        // Inicializar la tabla de enrutamiento para todos los nodos
+        let routingTable = {};
+        for (let node of this.nodes.keys()) {
+            routingTable[node] = {
+                distance: node === startNode ? 0 : Infinity,
+                nextHop: node === startNode ? startNode : null
+            };
+        }
+
+        let hasUpdates = true;
+        while (hasUpdates) {
+            hasUpdates = false;
+
+            for (let currentNode of this.nodes.keys()) {
+                for (let neighbor of this.nodes.get(currentNode)) {
+                    // Si la distancia a un vecino + la distancia del vecino al destino es menor
+                    // que la distancia conocida, actualizamos la tabla de enrutamiento
+                    if (routingTable[currentNode].distance + neighbor.weight < routingTable[neighbor.node].distance) {
+                        routingTable[neighbor.node].distance = routingTable[currentNode].distance + neighbor.weight;
+                        routingTable[neighbor.node].nextHop = currentNode;
+                        hasUpdates = true;
+                    }
+                }
+            }
+        }
+
+        // Construir la ruta a partir de la tabla de enrutamiento
+        let node = targetNode;
+        let path = [node];
+        while (node !== startNode) {
+            node = routingTable[node].nextHop;
+            path.unshift(node);
+        }
+
+        return {
+            path: path,
+            distance: routingTable[targetNode].distance
+        };
+    }
+
+    // Función auxiliar para construir la ruta utilizando los predecesores
+    _buildPath(predecessors, startNode, endNode) {
+        let path = [endNode];
+        while (path[path.length - 1] !== startNode) {
+            path.push(predecessors[path[path.length - 1]]);
+        }
+        return path.reverse();
     }
 
     // Función para exportar el grafo a JSON
