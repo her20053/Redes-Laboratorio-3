@@ -67,6 +67,36 @@ class Graph {
         }
         return path.reverse();
     }
+    // Función para el algoritmo Flooding
+    flooding(startNode) {
+        let queue = [{ node: startNode, path: [startNode], cost: 0 }];
+        let paths = {};
+
+        while (queue.length > 0) {
+            let current = queue.shift();
+            let currentNode = current.node;
+            let currentPath = current.path;
+            let currentCost = current.cost;
+
+            let neighbors = this.nodes.get(currentNode);
+            for (let neighbor of neighbors) {
+                if (!currentPath.includes(neighbor.node)) {
+                    queue.push({
+                        node: neighbor.node,
+                        path: [...currentPath, neighbor.node],
+                        cost: currentCost + neighbor.weight
+                    });
+                }
+            }
+
+            if (!paths[currentNode]) {
+                paths[currentNode] = [];
+            }
+            paths[currentNode].push({ path: currentPath, cost: currentCost });
+        }
+
+        return paths;
+    }
 
     // Función para exportar el grafo a JSON
     exportToJSON() {
