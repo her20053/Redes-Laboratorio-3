@@ -2,6 +2,8 @@ class Node {
     constructor(id, data = {}) {
         this.id = id;
         this.data = data;
+        this.neighbors = [];
+        this.routing_table = {};
     }
 }
 
@@ -18,7 +20,7 @@ class Graph {
 
     addEdge(node1, node2, weight) {
         this.nodes.get(node1.id).edges.push({ node: node2, weight });
-        this.nodes.get(node2.id).edges.push({ node: node1, weight });  // Para grafo no dirigido
+        this.nodes.get(node2.id).edges.push({ node: node1, weight });
     }
 
     getEdge(node) {
