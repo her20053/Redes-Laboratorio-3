@@ -23,44 +23,85 @@ class Router {
         this.neighbors.push(neighbor);
     }
 
-    /**
-     * floodPacket: Envia un paquete a todos los vecinos excepto al que lo envió
-     * @param {String} packet : Paquete a enviar
-     * @param {String} sourceId : Identificador del router que envió el paquete
-     * @param {INt} ttl : Time to live
-     * @returns 
+     /**
+     * sendPacket: Envia un paquete a un destino especifico
+     * @param {String} destination : Identificador del destino
+     * @param {String} message : Mensaje a enviar
+     * @param {Int} ttl : Time to live
      */
-    floodPacket(packet, sourceId, ttl) {
+    sendPacket(destination, message, ttl) {
+        for (let neighbor of this.neighbors) {
+            console.log(`\nSending message from Router ${this.id} to Router ${neighbor.id}`)
+            neighbor.receivePacket(destination, message, ttl, this.id);
+        }
+    }
+
+    /**
+     * forwardPacket: Reenvia un paquete a un destino especifico
+     * @param {String} destination : Identificador del destino
+     * @param {String} message : Mensaje a enviar
+     * @param {Int} ttl : Time to live
+     * @param {String} sourceId : Identificador del router que envió el paquete
+     */
+    forwardPacket(destination, message, ttl, sourceId) {
         if (ttl <= 0) {
             console.log(`Packet dropped at Router ${this.id}, TTL expired.`);
             return;
         }
 
-        console.log(`Router ${this.id} received packet: ${packet} from Router ${sourceId} with TTL ${ttl}`);
-
+        console.log(`Forwarding message from Router ${this.id}`);
         for (let neighbor of this.neighbors) {
             if (neighbor.id !== sourceId) {
-                neighbor.floodPacket(packet, this.id, ttl - 1);
+                neighbor.receivePacket(destination, message, ttl - 1, this.id);
             }
+        }
+    }
+
+        /**
+     * receivePacket: Recibe un paquete de un destino especifico
+     * @param {String} destination : Identificador del destino
+     * @param {String} message : Mensaje a enviar
+     * @param {Int} ttl : Time to live
+     * @param {String} sourceId : Identificador del router que envió el paquete
+     */
+    receivePacket(destination, message, ttl, sourceId) {
+        if (destination === this.id) {
+            console.log(`Received message at Router ${this.id}: ${message}`);
+        } else {
+            this.forwardPacket(destination, message, ttl, sourceId);
         }
     }
 }
 
-// Crear instancias de routers
+// Create instances of routers
 const routerA = new Router("A");
 const routerB = new Router("B");
 const routerC = new Router("C");
+const routerD = new Router("D");
+const routerE = new Router("E");
+const routerF = new Router("F");
+const routerG = new Router("G");
+const routerH = new Router("H");
 
-// Establecer relaciones de vecindad
+// Establish neighbor relationships
 routerA.addNeighbor(routerB);
 routerA.addNeighbor(routerC);
-
 routerB.addNeighbor(routerA);
-routerB.addNeighbor(routerC);
-
+routerB.addNeighbor(routerD);
 routerC.addNeighbor(routerA);
-routerC.addNeighbor(routerB);
+routerC.addNeighbor(routerD);
+routerC.addNeighbor(routerE);
+routerD.addNeighbor(routerB);
+routerD.addNeighbor(routerC);
+routerD.addNeighbor(routerF);
+routerE.addNeighbor(routerC);
+routerE.addNeighbor(routerF);
+routerF.addNeighbor(routerD);
+routerF.addNeighbor(routerE);
+routerF.addNeighbor(routerG);
+routerG.addNeighbor(routerF);
+routerG.addNeighbor(routerH);
+routerH.addNeighbor(routerG);
 
-// Iniciar el flooding desde el Router A
-routerA.floodPacket("Hello World!", null, 3);
-``
+// Send a packet from RouterA to RouterH with TTL 4 and the message "Hello H!"
+routerA.sendPacket("H", "Hello H!", 4);
