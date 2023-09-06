@@ -1,6 +1,15 @@
+/**
+ * Archivo con el algoritmo de flooding
+ */
+
 // Importamos el graph y node de algoritmos/grafo.js
 const { Graph, Node } = require('./grafo');
 
+/**
+ * flooding: Implementación del algoritmo de flooding
+ * @param {String} startNode 
+ * @returns 
+ */
 function flooding(startNode) {
     let queue = [{ node: startNode, path: [startNode], cost: 0 }];
     let paths = {};
@@ -31,7 +40,7 @@ function flooding(startNode) {
     return paths;
 }
 
-
+// Ejemplo
 const nodes = [];
 
 nodes.push(new Node('NodoA', {})); //0

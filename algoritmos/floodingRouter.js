@@ -1,13 +1,35 @@
+/**
+ * Flooding Router
+ */
+
+/**
+ * Router: Representa un router en la red
+ */
 class Router {
+    /**
+     * constructor: Crea una instancia de la clase Router
+     * @param {String} id : Identificador del router
+     */
     constructor(id) {
         this.id = id;
         this.neighbors = [];
     }
 
+    /**
+     * addNeighbor: Agrega un vecino al router
+     * @param {String} neighbor : Identificador del vecino
+     */
     addNeighbor(neighbor) {
         this.neighbors.push(neighbor);
     }
 
+    /**
+     * floodPacket: Envia un paquete a todos los vecinos excepto al que lo envió
+     * @param {String} packet : Paquete a enviar
+     * @param {String} sourceId : Identificador del router que envió el paquete
+     * @param {INt} ttl : Time to live
+     * @returns 
+     */
     floodPacket(packet, sourceId, ttl) {
         if (ttl <= 0) {
             console.log(`Packet dropped at Router ${this.id}, TTL expired.`);

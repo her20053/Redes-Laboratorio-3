@@ -1,6 +1,17 @@
+/**
+ * Algoritmo de vector de distancia
+ */
+
 // Importamos el graph y node de algoritmos/grafo.js
 const { Graph, Node } = require('./grafo');
 
+/**
+ * bellmanFord: Implementación del algoritmo de Bellman-Ford
+ * @param {graph} graph 
+ * @param {String} startNode 
+ * @param {String} endNode 
+ * @returns 
+ */
 function bellmanFord(graph, startNode, endNode) {
     // Inicializar las distancias y predecesores
     const distances = new Map();
@@ -63,8 +74,10 @@ function bellmanFord(graph, startNode, endNode) {
     return { path, distance: distances.get(endNode.id) };
 }
 
+// Crear el grafo
 const nodes = [];
 
+// Crear los nodos
 nodes.push(new Node('NodoA', {})); //0
 nodes.push(new Node('NodoB', {})); //1
 nodes.push(new Node('NodoC', {})); //2
@@ -75,11 +88,11 @@ nodes.push(new Node('NodoG', {})); //6
 nodes.push(new Node('NodoH', {})); //7 
 nodes.push(new Node('NodoI', {})); //8
 
-
+// Crear las aristas
 const graph = new Graph();
 
 nodes.forEach(node => graph.addNode(node));
-
+//agregar aristas
 graph.addEdge(nodes[0], nodes[1], 7);
 graph.addEdge(nodes[0], nodes[8], 1);
 graph.addEdge(nodes[0], nodes[2], 7);
@@ -108,6 +121,11 @@ let nodo_inicio = nodes[0];
 
 let nodo_final = nodes[4];
 
+/**
+ * buildRoutingTable: Construye la tabla de enrutamiento para un nodo
+ * @param {graph} graph : Grafo
+ * @param {*} startNode 
+ */
 function buildRoutingTable(graph, startNode) {
     // Inicializar las distancias y predecesores
     const distances = new Map();

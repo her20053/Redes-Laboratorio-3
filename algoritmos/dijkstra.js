@@ -1,6 +1,15 @@
+/**
+ * Algoritmo de Dijkstra
+ */
+
 // Importamos el graph y node de algoritmos/grafo.js
 const { Graph, Node } = require('./grafo');
 
+/**
+ * dijkstra: Implementación del algoritmo de Dijkstra
+ * @param {String} startNode 
+ * @returns 
+ */
 function dijkstra(startNode) {
     let distances = {};
     let visited = new Set();
@@ -49,6 +58,13 @@ function dijkstra(startNode) {
     return routes;
 }
 
+/**
+ * _buildPath: Construye el camino más corto
+ * @param {String} predecessors : predecesores
+ * @param {String} startNode : origen
+ * @param {String} endNode : destino
+ * @returns 
+ */
 function _buildPath(predecessors, startNode, endNode) {
     let path = [endNode];
     while (path[path.length - 1] !== startNode) {
@@ -57,7 +73,7 @@ function _buildPath(predecessors, startNode, endNode) {
     return path.reverse();
 }
 
-
+// Ejemplo
 const nodes = [];
 
 nodes.push(new Node('NodoA', {})); //0
