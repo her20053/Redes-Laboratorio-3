@@ -130,53 +130,115 @@ async function loginMain() {
     });
 }
 
+/*
+ * Funcion que envia las tablas de enrutamiento a los vecinos
+*/
+function sendRoutingTable() {
+
+    // Creamos la stanza que lleva el payload del mensaje
+
+    const infoMessage = {
+        type: "info",
+        headers: {
+            from: `${client.username}@${client.domain}`,
+            to: "",
+            hop_count: 0,
+        },
+        payload: client.router.routingTable,
+    };
+
+
+    for (let neighbor of client.router.neighbors) {
+
+        const neighborJid = client.names[neighbor];
+
+        const infoMessageCopy = { ...infoMessage };
+
+        infoMessage.headers.to = neighborJid;
+
+        client.directMessage(neighborJid, JSON.stringify(infoMessageCopy));
+
+    }
+
+}
+
+function updateRoutingTable(messageData) {
+
+    const original_routing_table = client.router.routingTable;
+
+    const neighbor_routing_table = messageData.payload;
+
+    const neighbor = messageData.headers.from;
+
+    const updated_routing_table = client.router.updateRoutingTable(neighbor, neighbor_routing_table);
+
+    // Realizamos validaciones para saber si se actualizo la tabla de enrutamiento
+
+    if (JSON.stringify(updated_routing_table) !== JSON.stringify(original_routing_table)) {
+
+        console.log("function updateRoutingTable(messageData): Se entro al if");
+
+        console.log("Routing Table Actualizada: ", client.router.routingTable);
+
+        console.log("Routing Table Original: ", original_routing_table);
+
+        // Enviamos la tabla de enrutamiento a los vecinos
+
+        // sendRoutingTable();
+
+    }
+
+}
+
+
+
 
 function manualSetup() {
     // Read the contents of 'topos.json'
-    fs.readFile('topos.json', 'utf8', (err, data) => {
-      if (err) {
-        console.error("Error reading the file:", err);
-        return;
-      }
-  
-      // Parse the entire JSON array
-      try {
-        const jsonArray = JSON.parse(data);
-  
-        // Check if the array contains at least two elements
-        if (Array.isArray(jsonArray) && jsonArray.length >= 2) {
-          // Retrieve the first two elements as dictionaries
-          client.names = jsonArray[0].config;
-          const neighborsDic = jsonArray[1].config;
-  
-          // Now you can access client.names and neighborsDic
-          console.log("names:", client.names);
-          console.log("topo:", neighborsDic);
-
-          const searchValue = `${client.username}@${client.domain}`;
-          // console.log(`searchValue:`, searchValue);
-          const nodeId = Object.keys(client.names).find(key => client.names[key] === searchValue);
-          console.log(`nodeId:`, nodeId);
-          client.router = new Router(nodeId);
-
-          const searchKey = client.router.id;
-            console.log(`searchKey:`, searchKey);
-            const neighbors = neighborsDic[searchKey];
-            for (let neighbor of neighbors) {
-                client.router.addNeighbor(neighbor);
-                client.router.routingTable[neighbor] = -1;
-            }
-            console.log(`Neighbors:`, client.router.neighbors);
-            console.log(`Routing Table:`, client.router.routingTable);
-
-        } else {
-          console.error("The JSON array does not contain at least two elements.");
+    fs.readFile('topos2.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error("Error reading the file:", err);
+            return;
         }
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-      }
+
+        // Parse the entire JSON array
+        try {
+            const jsonArray = JSON.parse(data);
+
+            // Check if the array contains at least two elements
+            if (Array.isArray(jsonArray) && jsonArray.length >= 2) {
+                // Retrieve the first two elements as dictionaries
+                client.names = jsonArray[0].config;
+                const neighborsDic = jsonArray[1].config;
+
+                // Now you can access client.names and neighborsDic
+                console.log("names:", client.names);
+                console.log("topo:", neighborsDic);
+
+                const searchValue = `${client.username}@${client.domain}`;
+                // console.log(`searchValue:`, searchValue);
+                const nodeId = Object.keys(client.names).find(key => client.names[key] === searchValue);
+                console.log(`nodeId:`, nodeId);
+                client.router = new Router(nodeId);
+
+                const searchKey = client.router.id;
+                console.log(`searchKey:`, searchKey);
+                const neighbors = neighborsDic[searchKey];
+                for (let neighbor of neighbors) {
+                    client.router.addNeighbor(neighbor);
+                    client.router.routingTable[neighbor] = -1;
+                }
+                console.log(`Neighbors:`, client.router.neighbors);
+                console.log(`Routing Table:`, client.router.routingTable);
+
+            } else {
+                console.error("The JSON array does not contain at least two elements.");
+            }
+        } catch (error) {
+            console.error("Error parsing JSON:", error);
+        }
     });
-  }
+}
 
 function setUpId(config) {
     console.log(`Names:`, config);
@@ -313,7 +375,7 @@ function messageListener() {
                         checkMessage(messageData.headers, messageData.payload);
                     }
                     else if (messageData.type === "info" && messageData.headers && messageData.payload) {
-                        updateRoutingTable(messageData.headers, messageData.payload);
+                        updateRoutingTable(messageData);
                     }
                     else if (messageData.type === "echo" && messageData.headers && messageData.payload) {
                         updateNeighbors(messageData);

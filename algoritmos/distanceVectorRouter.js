@@ -24,7 +24,7 @@ class Router {
      * @param {diccionario} routingTable : Diccionario con la tabla de enrutamiento
      */
     loadRoutingTable(routingTable) {
-        for (let[dest, cost] of Object.entries(routingTable)) {
+        for (let [dest, cost] of Object.entries(routingTable)) {
             this.routingTable[dest] = cost;
             this.nextHop[dest] = dest;
         }
@@ -52,7 +52,7 @@ class Router {
                 this.nextHop[dest] = nextHopRouter; //actualizar la siguiente parada
             }
         }
-    }          
+    }
 
     /**
      * updateRoutingTable: Actualiza la tabla de enrutamiento del router

@@ -28,7 +28,7 @@ class Router {
      * @param {diccionario} routingTable : Diccionario con la tabla de enrutamiento
      */
     loadRoutingTable(routingTable) {
-        for (let[dest, cost] of Object.entries(routingTable)) {
+        for (let [dest, cost] of Object.entries(routingTable)) {
             this.routingTable[dest] = cost;
             this.nextHop[dest] = dest;
         }
@@ -56,7 +56,7 @@ class Router {
                 this.nextHop[dest] = nextHopRouter; //actualizar la siguiente parada
             }
         }
-    }          
+    }
 
     /**
      * updateRoutingTable: Actualiza la tabla de enrutamiento del router
@@ -65,21 +65,36 @@ class Router {
      * @returns 
      */
     updateRoutingTable(neighborId, neighborRoutingTable) {
+        console.log("\n\n\n\n\nFunción updateRoutingTable llamada con:", neighborId, neighborRoutingTable);
+
         let updated = false;
+
         for (let [dest, cost] of Object.entries(neighborRoutingTable)) {
-            if (
-                !this.routingTable.hasOwnProperty(dest) ||
-                this.routingTable[dest] > this.routingTable[neighborId] + cost
-            ) {
+            console.log(`Procesando destino: ${dest} con costo: ${cost}`);
+
+            if (!this.routingTable.hasOwnProperty(dest)) {
+                console.log(`Destino ${dest} no existe en routingTable. Añadiendo...`);
                 this.routingTable[dest] = this.routingTable[neighborId] + cost;
                 updated = true;
+            } else if (this.routingTable[dest] > this.routingTable[neighborId] + cost) {
+                console.log(`El costo actual para ${dest} en routingTable es mayor que el costo a través de ${neighborId}. Actualizando...`);
+                this.routingTable[dest] = this.routingTable[neighborId] + cost;
+                updated = true;
+            } else {
+                console.log(`El costo para ${dest} no necesita actualización.`);
             }
         }
+
         if (updated) {
-            this.calculateNextHop(); //recaulcular la siguiente parada
+            console.log("RoutingTable actualizada. Calculando siguiente parada...");
+            this.calculateNextHop();
+        } else {
+            console.log("RoutingTable no ha sido actualizada.");
         }
+
         return updated;
     }
+
 
     /**
      * sendRoutingTable: Envia la tabla de enrutamiento a los vecinos
