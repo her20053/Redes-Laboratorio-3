@@ -240,6 +240,7 @@ function manualSetup() {
                 for (let neighbor of neighbors) {
                     client.router.addNeighbor(neighbor);
                     client.router.routingTable[neighbor] = -1;
+                    client.router.nextHop[neighbor] = neighbor;
                 }
                 console.log(`Neighbors:`, client.router.neighbors);
                 console.log(`Routing Table:`, client.router.routingTable);
