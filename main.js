@@ -168,23 +168,36 @@ function updateRoutingTable(messageData) {
 
     const neighbor_routing_table = messageData.payload;
 
-    const neighbor = messageData.headers.from;
+    const neighborNodeName = Object.keys(client.names).find(key => client.names[key] === messageData.headers.from);
 
-    const updated_routing_table = client.router.updateRoutingTable(neighbor, neighbor_routing_table);
+    // console.log("\n - updateRoutingTable(messageData) Names: ", client.names);
+    // console.log("\n - updateRoutingTable(messageData) From: ", messageData.headers.from);
+    // console.log("\n - updateRoutingTable(messageData) NeighborNodeName: ", neighborNodeName);
+
+    const updated_routing_table = client.router.updateRoutingTable(neighborNodeName, neighbor_routing_table);
 
     // Realizamos validaciones para saber si se actualizo la tabla de enrutamiento
 
-    if (JSON.stringify(updated_routing_table) !== JSON.stringify(original_routing_table)) {
+    if (JSON.stringify(client.router.routingTable) !== JSON.stringify(original_routing_table)) {
 
-        console.log("function updateRoutingTable(messageData): Se entro al if");
+        console.log("\n - updateRoutingTable(messageData): Se entro al if");
 
-        console.log("Routing Table Actualizada: ", client.router.routingTable);
+        console.log("\n - updateRoutingTable(messageData): Routing Table Actualizada: ", client.router.routingTable);
 
-        console.log("Routing Table Original: ", original_routing_table);
+        console.log("\n - updateRoutingTable(messageData): Routing Table Original: ", original_routing_table);
 
         // Enviamos la tabla de enrutamiento a los vecinos
 
-        // sendRoutingTable();
+        sendRoutingTable();
+
+    }
+    else {
+
+        console.log("\n - updateRoutingTable(messageData): No se entro al if");
+
+        console.log("\n - updateRoutingTable(messageData): Routing Table Actualizada: ", client.router.routingTable);
+
+        console.log("\n - updateRoutingTable(messageData): Routing Table Original: ", original_routing_table);
 
     }
 

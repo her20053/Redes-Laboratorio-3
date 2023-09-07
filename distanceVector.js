@@ -65,35 +65,46 @@ class Router {
      * @returns 
      */
     updateRoutingTable(neighborId, neighborRoutingTable) {
-        console.log("\n\n\n\n\nFunción updateRoutingTable llamada con:", neighborId, neighborRoutingTable);
+        // console.log("\n + updateRoutingTable llamada con:", neighborId, neighborRoutingTable);
 
         let updated = false;
 
-        for (let [dest, cost] of Object.entries(neighborRoutingTable)) {
-            console.log(`Procesando destino: ${dest} con costo: ${cost}`);
+        // Verificar que el neighborId exista en la tabla de enrutamiento
+        if (!this.routingTable.hasOwnProperty(neighborId)) {
+            // console.log(`\n + updateRoutingTable Advertencia: ${neighborId} no se encuentra en la tabla de enrutamiento. Ignorando actualización.`);
+            return updated;
+        }
 
-            if (!this.routingTable.hasOwnProperty(dest)) {
-                console.log(`Destino ${dest} no existe en routingTable. Añadiendo...`);
-                this.routingTable[dest] = this.routingTable[neighborId] + cost;
-                updated = true;
-            } else if (this.routingTable[dest] > this.routingTable[neighborId] + cost) {
-                console.log(`El costo actual para ${dest} en routingTable es mayor que el costo a través de ${neighborId}. Actualizando...`);
-                this.routingTable[dest] = this.routingTable[neighborId] + cost;
+        const costToNeighbor = this.routingTable[neighborId];
+
+        for (let [dest, cost] of Object.entries(neighborRoutingTable)) {
+            // console.log(`\n + updateRoutingTable Procesando destino: ${dest} con costo: ${cost}`);
+
+            const potentialCost = costToNeighbor + cost;
+
+            if (!this.routingTable.hasOwnProperty(dest) || this.routingTable[dest] > potentialCost) {
+                if (!this.routingTable.hasOwnProperty(dest)) {
+                    // console.log(`\n + updateRoutingTable Destino ${dest} no existe en routingTable. Añadiendo...`);
+                } else {
+                    // console.log(`\n + updateRoutingTable El costo actual para ${dest} en routingTable es mayor que el costo a través de ${neighborId}. Actualizando...`);
+                }
+                this.routingTable[dest] = potentialCost;
                 updated = true;
             } else {
-                console.log(`El costo para ${dest} no necesita actualización.`);
+                // console.log(`\n + updateRoutingTable El costo para ${dest} no necesita actualización.`);
             }
         }
 
         if (updated) {
-            console.log("RoutingTable actualizada. Calculando siguiente parada...");
-            this.calculateNextHop();
+            // console.log("\n + updateRoutingTable RoutingTable actualizada. Calculando siguiente parada...");
+            // this.calculateNextHop();
         } else {
-            console.log("RoutingTable no ha sido actualizada.");
+            // console.log("\n + updateRoutingTable RoutingTable no ha sido actualizada.");
         }
 
         return updated;
     }
+
 
 
     /**
