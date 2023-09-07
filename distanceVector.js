@@ -1,9 +1,4 @@
 /**
- * Simulación de un router que utiliza el algoritmo de vector de distancia para
- */
-
-
-/**
  * Clase que representa un router
  */
 class Router {
@@ -13,10 +8,19 @@ class Router {
      */
     constructor(id) {
         this.id = id;
-        this.routingTable = {};
         this.nextHop = {};
-        this.routingTable[id] = 0; // Distancia a sí mismo es 0
+        this.neighbors = [];
+        this.routingTable = {};
         this.nextHop[id] = id; // La siguiente parada para sí mismo es él mismo
+        this.routingTable[id] = 0; // Distancia a sí mismo es 0 o no
+    }
+
+    /**
+     * addNeighbor: Agrega un vecino al router
+     * @param {String} neighbor : Identificador del vecino
+     */
+    addNeighbor(neighbor) {
+        this.neighbors.push(neighbor);
     }
 
     /**
@@ -145,36 +149,37 @@ class Router {
     }
 }
 
-// Crear instancias de routers
-const routerA = new Router("A");
-const routerB = new Router("B");
-const routerC = new Router("C");
+module.exports = Router;
 
-const routers = [routerA, routerB, routerC];
+// // Crear instancias de routers
+// const routerA = new Router("A");
+// const routerB = new Router("B");
+// const routerC = new Router("C");
 
-// Hardcodear información inicial de enrutamiento
-routerA.loadRoutingTable({ A: 0, B: 1, C: 4 });
-routerB.loadRoutingTable({ A: 1, B: 0, C: 2 });
-routerC.loadRoutingTable({ A: 4, B: 2, C: 0 });
+// const routers = [routerA, routerB, routerC];
 
-// Imprimir tablas de enrutamiento iniciales
-routerA.printRoutingTable();
-routerB.printRoutingTable();
-routerC.printRoutingTable();
+// // Hardcodear información inicial de enrutamiento
+// routerA.loadRoutingTable({ A: 0, B: 1, C: 4 });
+// routerB.loadRoutingTable({ A: 1, B: 0, C: 2 });
+// routerC.loadRoutingTable({ A: 4, B: 2, C: 0 });
 
-// // Simular el envío de información de enrutamiento
-routerA.sendRoutingTable([routerB, routerC]);
-routerB.sendRoutingTable([routerA, routerC]);
-routerC.sendRoutingTable([routerA, routerB]);
+// // Imprimir tablas de enrutamiento iniciales
+// routerA.printRoutingTable();
+// routerB.printRoutingTable();
+// routerC.printRoutingTable();
 
-// Imprimir tablas de enrutamiento actualizadas
-routerA.printRoutingTable();
-routerB.printRoutingTable();
-routerC.printRoutingTable();
+// // // Simular el envío de información de enrutamiento
+// routerA.sendRoutingTable([routerB, routerC]);
+// routerB.sendRoutingTable([routerA, routerC]);
+// routerC.sendRoutingTable([routerA, routerB]);
 
-// console.log(routerA.routingTable);
-// console.log(routerA.nextHop);
-// console.log(routerA.getNextHop("C"));
+// // Imprimir tablas de enrutamiento actualizadas
+// routerA.printRoutingTable();
+// routerB.printRoutingTable();
+// routerC.printRoutingTable();
 
-//simular el envio de mensajes
-routerA.sendPacket("C", "Hello, Router C!");
+// // console.log(routerA.nextHop);
+// // console.log(routerA.getNextHop("C"));
+
+// //simular el envio de mensajes
+// routerA.sendPacket("C", "Hello, Router C!");

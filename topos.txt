@@ -1,0 +1,5 @@
+{"type":"names", "config":{"A": "messi10@alumchat.xyz", "B": "mom20067@alumchat.xyz", "C": "her20053@alumchat.xyz", "D": "gon20362@alumchat.xyz", "E": "superman@alumchat.xyz", "F": "pablishi@alumchat.xyz", "G": "joehueco@alumchat.xyz"} }
+{"type":"topo", "config":{"A": ["C", "E", "F", "G"], "B": ["F", "G"], "C": ["A", "D", "G"], "D": ["C"], "E": ["A"], "F": ["A", "B"], "G": ["A", "B", "C"]} }
+{"type":"echo", "headers": ["from": "A", "to": "B"], "payload": ["timestamp1":"12:42:22:10", "timestamp2":"12:42:28:12"]}
+{"type":"info", "headers":  [“from” : ”foo”, “to” : ”bar”, “hop_count” : 3] ,“payload” : {"A":0,"B":1,"C":3}}
+{"type":"message", "headers":  [“from” : ”foo”, “to” : ”bar”, “hop_count” : 3] ,“payload” : “hola"}
