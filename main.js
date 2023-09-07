@@ -87,9 +87,11 @@ function submenuDV() {
         switch (answer) {
             case '1':
                 sendEcho();
+                submenuDV();
                 break;
             case '2':
                 sendEcho();
+                submenuDV();
                 break;
             default:
                 console.log('Opcion invalida! Intente de nuevo!');
@@ -200,10 +202,20 @@ function updateNeighbors(messageData) {
         console.log(`Routing Table Actualizada:`, client.router.routingTable);
 
     } else {
+        // console.log("Else");
+        // console.log(`Original timestamp1: ${messageData.payload.timestamp1}`);
+        // console.log(`Original timestamp2: ${messageData.payload.timestamp2}`);
+
         const timestamp1 = parseInt(messageData.payload.timestamp1);
         const timestamp2 = parseInt(messageData.payload.timestamp2);
+
+        // console.log(`Parsed timestamp1: ${timestamp1}`);
+        // console.log(`Parsed timestamp2: ${timestamp2}`);
+
         timeDiff = timestamp2 - timestamp1;
+
         console.log(`Echo message from Router ${messageData.headers.from} to Router ${messageData.headers.to} took ${timeDiff} ms`);
+
 
         // Actualizar tabla de enrutamiento
         // Buscamos la clave del usuario en la tabla de enrutamiento
