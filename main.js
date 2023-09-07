@@ -14,6 +14,7 @@
 const Client = require("./client");
 const Router = require("./distanceVector")
 const readline = require('readline');
+const fs = require('fs');
 
 // Creamos la interfaz para leer datos del usuario.
 let rl = readline.createInterface({
@@ -79,20 +80,27 @@ function menu() {
 }
 
 function submenuDV() {
-    console.log('\n[1] ECHO');
-    console.log('[2] VER CONTACTOS');
+    console.log('\n[1] MANUAL SETUP');
+    console.log('[2] ECHO');
+    console.log('[3] SEND ROUTING TABLE');
+    console.log('[4] REGRESAR A MENU');
 
     // Leer la opcion del usuario y llamar la funcion correspondente
     rl.question('Opcion -> ', answer => {
         switch (answer) {
             case '1':
-                sendEcho();
+                manualSetup();
                 submenuDV();
                 break;
             case '2':
                 sendEcho();
                 submenuDV();
                 break;
+            case '3':
+                sendRoutingTable();
+                submenuDV();
+            case '4':
+                menu();
             default:
                 console.log('Opcion invalida! Intente de nuevo!');
                 submenuDV();
@@ -121,6 +129,54 @@ async function loginMain() {
         });
     });
 }
+
+
+function manualSetup() {
+    // Read the contents of 'topos.json'
+    fs.readFile('topos.json', 'utf8', (err, data) => {
+      if (err) {
+        console.error("Error reading the file:", err);
+        return;
+      }
+  
+      // Parse the entire JSON array
+      try {
+        const jsonArray = JSON.parse(data);
+  
+        // Check if the array contains at least two elements
+        if (Array.isArray(jsonArray) && jsonArray.length >= 2) {
+          // Retrieve the first two elements as dictionaries
+          client.names = jsonArray[0].config;
+          const neighborsDic = jsonArray[1].config;
+  
+          // Now you can access client.names and neighborsDic
+          console.log("names:", client.names);
+          console.log("topo:", neighborsDic);
+
+          const searchValue = `${client.username}@${client.domain}`;
+          // console.log(`searchValue:`, searchValue);
+          const nodeId = Object.keys(client.names).find(key => client.names[key] === searchValue);
+          console.log(`nodeId:`, nodeId);
+          client.router = new Router(nodeId);
+
+          const searchKey = client.router.id;
+            console.log(`searchKey:`, searchKey);
+            const neighbors = neighborsDic[searchKey];
+            for (let neighbor of neighbors) {
+                client.router.addNeighbor(neighbor);
+                client.router.routingTable[neighbor] = -1;
+            }
+            console.log(`Neighbors:`, client.router.neighbors);
+            console.log(`Routing Table:`, client.router.routingTable);
+
+        } else {
+          console.error("The JSON array does not contain at least two elements.");
+        }
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    });
+  }
 
 function setUpId(config) {
     console.log(`Names:`, config);
@@ -202,7 +258,7 @@ function updateNeighbors(messageData) {
         console.log(`Routing Table Actualizada:`, client.router.routingTable);
 
     } else {
-        // console.log("Else");
+        console.log("Else");
         // console.log(`Original timestamp1: ${messageData.payload.timestamp1}`);
         // console.log(`Original timestamp2: ${messageData.payload.timestamp2}`);
 
@@ -212,7 +268,7 @@ function updateNeighbors(messageData) {
         // console.log(`Parsed timestamp1: ${timestamp1}`);
         // console.log(`Parsed timestamp2: ${timestamp2}`);
 
-        timeDiff = timestamp2 - timestamp1;
+        timeDiff = Math.abs(timestamp2 - timestamp1);
 
         console.log(`Echo message from Router ${messageData.headers.from} to Router ${messageData.headers.to} took ${timeDiff} ms`);
 
