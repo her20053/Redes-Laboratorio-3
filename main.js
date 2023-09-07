@@ -83,7 +83,8 @@ function submenuDV() {
     console.log('\n[1] MANUAL SETUP');
     console.log('[2] ECHO');
     console.log('[3] SEND ROUTING TABLE');
-    console.log('[4] REGRESAR A MENU');
+    console.log('[4] SEND PACKET');
+    console.log('[5] REGRESAR A MENU');
 
     // Leer la opcion del usuario y llamar la funcion correspondente
     rl.question('Opcion -> ', answer => {
@@ -198,6 +199,8 @@ function updateRoutingTable(messageData) {
         console.log("\n - updateRoutingTable(messageData): Routing Table Actualizada: ", client.router.routingTable);
 
         console.log("\n - updateRoutingTable(messageData): Routing Table Original: ", original_routing_table);
+
+        console.log("\n - updateRoutingTable(messageData): NextHop: ", client.router.nextHop);
 
     }
 

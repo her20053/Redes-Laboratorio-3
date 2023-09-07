@@ -45,15 +45,14 @@ class Router {
                 for (let neighbor of Object.keys(this.routingTable)) {
                     if (neighbor !== this.id) {
                         const costToNeighbor = this.routingTable[neighbor];
-                        const potentialNextHop = costToNeighbor + routers.find((router) => router.id === neighbor).routingTable[dest];
+                        const potentialNextHop = costToNeighbor + this.routingTable[dest];
                         if (potentialNextHop < minCost) {
                             minCost = potentialNextHop;
                             nextHopRouter = neighbor;
                         }
                     }
                 }
-                // console.log(`Next hop for ${dest} is ${nextHopRouter}`)
-                this.nextHop[dest] = nextHopRouter; //actualizar la siguiente parada
+                this.nextHop[dest] = nextHopRouter;
             }
         }
     }
@@ -97,7 +96,7 @@ class Router {
 
         if (updated) {
             // console.log("\n + updateRoutingTable RoutingTable actualizada. Calculando siguiente parada...");
-            // this.calculateNextHop();
+            this.calculateNextHop();
         } else {
             // console.log("\n + updateRoutingTable RoutingTable no ha sido actualizada.");
         }
