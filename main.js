@@ -133,7 +133,7 @@ async function loginMain() {
 
 function manualSetup() {
     // Read the contents of 'topos.json'
-    fs.readFile('topos.json', 'utf8', (err, data) => {
+    fs.readFile('topos2.json', 'utf8', (err, data) => {
       if (err) {
         console.error("Error reading the file:", err);
         return;
@@ -243,7 +243,7 @@ function updateNeighbors(messageData) {
         const echoMessageCopy = { ...messageData };
 
         echoMessageCopy.payload.timestamp2 = timestamp2;
-        timeDiff = echoMessageCopy.payload.timestamp2 - parseInt(echoMessageCopy.payload.timestamp1);
+        timeDiff =  Math.abs(echoMessageCopy.payload.timestamp2 - parseInt(echoMessageCopy.payload.timestamp1));
         console.log(`Echo message from Router ${echoMessageCopy.headers.from} to Router ${echoMessageCopy.headers.to} took ${timeDiff} ms`);
         client.directMessage(user, JSON.stringify(echoMessageCopy));
 
