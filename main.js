@@ -100,7 +100,11 @@ function submenuDV() {
             case '3':
                 sendRoutingTable();
                 submenuDV();
+                break;
             case '4':
+                sendPacket();
+                break;
+            case '5':
                 menu();
             default:
                 console.log('Opcion invalida! Intente de nuevo!');
@@ -131,13 +135,70 @@ async function loginMain() {
     });
 }
 
+/**
+ * sendPacket: envia un mensaje a un usuario
+ */
+function sendPacket() {
+    console.log('\nSEND PACKET:')
+    rl.question("Usuario: ", user => {
+        
+        const userJid = `${user}@${client.domain}`;
+        const nodeId = Object.keys(client.names).find(key => client.names[key] === userJid); //agarrar el id del nodo
+
+        rl.question("Mensaje: ", message => {
+
+            //agararr el nextHop
+            const nextHop = client.router.getNextHop(nodeId);
+            //agarrar el usuario del nextHop
+            const nextHopRouter = client.names[nextHop];
+            console.log(`Destination : ${userJid + ", " + nodeId} NextHop: ${nextHopRouter + ", " +nextHop}`)
+
+
+            const messageData = {
+                type: "message",
+                headers: {
+                    from: `${client.username}@${client.domain}`,
+                    to: userJid,
+                    hop_count: 0,
+                },
+                payload: message,
+            };
+
+            client.directMessage(nextHopRouter, JSON.stringify(messageData));
+            console.log(`Mensaje enviado a ${nextHopRouter}`);
+            submenuDV();
+
+        });
+    });
+}
+
+function receivePacket(messageData) {
+    // console.log(`\n${messageData.headers.from}: ${messageData.payload}`);
+    const destination = messageData.headers.to;
+
+    //revisar si el mensaje es para el cliente
+    if (destination === `${client.username}@${client.domain}`) {
+        console.log(`Mensaje recibido en Router ${client.router.id}: ${messageData.payload}`);
+    }
+    else {
+
+        //agarramos el nodo del usuario
+        const nodeId = Object.keys(client.names).find(key => client.names[key] === destination); //agarrar el id del nodo
+        console.log(`\nDestination : ${destination + ", " + nodeId}`)
+        //reenviar el mensaje
+        const nextHop = client.router.getNextHop(nodeId);
+        const nextHopRouter = client.names[nextHop];
+        console.log(`Forwarding message from Router ${client.username + ", " +client.router.id} to Router ${nextHopRouter + ", " + nextHop}`);
+        client.directMessage(nextHopRouter, JSON.stringify(messageData));
+    }
+}
+
 /*
  * Funcion que envia las tablas de enrutamiento a los vecinos
 */
 function sendRoutingTable() {
 
     // Creamos la stanza que lleva el payload del mensaje
-
     const infoMessage = {
         type: "info",
         headers: {
@@ -150,62 +211,53 @@ function sendRoutingTable() {
 
 
     for (let neighbor of client.router.neighbors) {
-
         const neighborJid = client.names[neighbor];
-
         const infoMessageCopy = { ...infoMessage };
-
         infoMessage.headers.to = neighborJid;
-
         client.directMessage(neighborJid, JSON.stringify(infoMessageCopy));
 
     }
 
 }
 
+/**
+ * updateRoutingTable: Actualiza la tabla de enrutamiento
+ * @param {string} messageData : Mensaje recibido
+ */
 function updateRoutingTable(messageData) {
 
     const original_routing_table = client.router.routingTable;
-
     const neighbor_routing_table = messageData.payload;
-
     const neighborNodeName = Object.keys(client.names).find(key => client.names[key] === messageData.headers.from);
 
     // console.log("\n - updateRoutingTable(messageData) Names: ", client.names);
     // console.log("\n - updateRoutingTable(messageData) From: ", messageData.headers.from);
     // console.log("\n - updateRoutingTable(messageData) NeighborNodeName: ", neighborNodeName);
 
-    const updated_routing_table = client.router.updateRoutingTable(neighborNodeName, neighbor_routing_table);
+    client.router.updateRoutingTable(neighborNodeName, neighbor_routing_table);
 
     // Realizamos validaciones para saber si se actualizo la tabla de enrutamiento
-
     if (JSON.stringify(client.router.routingTable) !== JSON.stringify(original_routing_table)) {
 
         console.log("\n - updateRoutingTable(messageData): Se entro al if");
-
         console.log("\n - updateRoutingTable(messageData): Routing Table Actualizada: ", client.router.routingTable);
-
         console.log("\n - updateRoutingTable(messageData): Routing Table Original: ", original_routing_table);
 
         // Enviamos la tabla de enrutamiento a los vecinos
-
         sendRoutingTable();
 
     }
     else {
-
         console.log("\n - updateRoutingTable(messageData): No se entro al if");
-
         console.log("\n - updateRoutingTable(messageData): Routing Table Actualizada: ", client.router.routingTable);
-
         console.log("\n - updateRoutingTable(messageData): Routing Table Original: ", original_routing_table);
-
         console.log("\n - updateRoutingTable(messageData): NextHop: ", client.router.nextHop);
-
     }
-
 }
 
+/**
+ * manualSetup: Configura el id y los vecinos del cliente
+ */
 function manualSetup() {
     // Read the contents of 'topos.json'
     fs.readFile('topos2.json', 'utf8', (err, data) => {
@@ -239,7 +291,7 @@ function manualSetup() {
                 const neighbors = neighborsDic[searchKey];
                 for (let neighbor of neighbors) {
                     client.router.addNeighbor(neighbor);
-                    client.router.routingTable[neighbor] = -1;
+                    client.router.routingTable[neighbor] = 1;
                     client.router.nextHop[neighbor] = neighbor;
                 }
                 console.log(`Neighbors:`, client.router.neighbors);
@@ -254,6 +306,10 @@ function manualSetup() {
     });
 }
 
+/**
+ * setUpId: Configura el id del cliente
+ * @param {dictionary} config : Diccionario con la configuracion de los vecinos
+ */
 function setUpId(config) {
     console.log(`Names:`, config);
     client.names = config;
@@ -264,6 +320,10 @@ function setUpId(config) {
     client.router = new Router(nodeId);
 }
 
+/**
+ * setUpIdNeighbors: Configura los vecinos del cliente
+ * @param {dictionary} config : Diccionario con la configuracion de los vecinos
+ */
 function setUpIdNeighbors(config) {
     console.log(`Topo:`, config);
     const searchKey = client.router.id;
@@ -277,6 +337,9 @@ function setUpIdNeighbors(config) {
     console.log(`Routing Table:`, client.router.routingTable);
 }
 
+/**
+ * sendEcho: Envia un mensaje de echo a los vecinos
+ */
 async function sendEcho() {
 
     const echoMessage = {
@@ -310,6 +373,10 @@ async function sendEcho() {
     }
 }
 
+/**
+ * updateNeighbors: Actualiza la tabla de enrutamiento
+ * @param {String} messageData : Mensaje recibido
+ */
 function updateNeighbors(messageData) {
     console.log("object:", messageData);
     let timeDiff = 0;
@@ -325,12 +392,10 @@ function updateNeighbors(messageData) {
 
         // Actualizar tabla de enrutamiento
         // Buscamos la clave del usuario en la tabla de enrutamiento
-
         const nodeId = Object.keys(client.names).find(key => client.names[key] === user);
 
         // Actualizamos la tabla de enrutamiento
         client.router.routingTable[nodeId] = timeDiff;
-
         console.log(`Routing Table Actualizada:`, client.router.routingTable);
 
     } else {
@@ -345,23 +410,23 @@ function updateNeighbors(messageData) {
         // console.log(`Parsed timestamp2: ${timestamp2}`);
 
         timeDiff = Math.abs(timestamp2 - timestamp1);
-
         console.log(`Echo message from Router ${messageData.headers.from} to Router ${messageData.headers.to} took ${timeDiff} ms`);
 
 
         // Actualizar tabla de enrutamiento
         // Buscamos la clave del usuario en la tabla de enrutamiento
-
         const nodeId = Object.keys(client.names).find(key => client.names[key] === messageData.headers.to);
 
         // Actualizamos la tabla de enrutamiento
         client.router.routingTable[nodeId] = timeDiff;
-
         console.log(`Routing Table Actualizada:`, client.router.routingTable);
     }
 
 }
 
+/**
+ * messsageListener: escucha los mensajes que llegan al cliente
+ */
 function messageListener() {
     if (!client.xmpp) {
         throw new Error("Error en la conexion, intenta de nuevo.");
@@ -386,7 +451,7 @@ function messageListener() {
                         setUpIdNeighbors(messageData.config);
                     }
                     else if (messageData.type === "message" && messageData.headers && messageData.payload) {
-                        checkMessage(messageData.headers, messageData.payload);
+                        receivePacket(messageData);
                     }
                     else if (messageData.type === "info" && messageData.headers && messageData.payload) {
                         updateRoutingTable(messageData);
