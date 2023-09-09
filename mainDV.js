@@ -24,67 +24,12 @@ let rl = readline.createInterface({
 
 // Creamos la instancia del cliente
 const client = new Client();
-const neighbors = {};
-
-function main() {
-    console.log("\nBienvenido a Alumchat!");
-    console.log('[1] INICIAR SESION');
-    console.log('[2] CERRAR SESION');
-    console.log('[3] SALIR');
-
-    // Leer la opcion del usuario y llamar la funcion correspondente
-    rl.question('Opcion -> ', answer => {
-        switch (answer) {
-            case '1':
-                loginMain();
-                break;
-            case '2':
-                logoutMain();
-                break;
-            case '3':
-                console.log('\nGracias por usar alumchat. Vuelva pronto!');
-                rl.close();
-                break;
-            default:
-                console.log('Opcion invalida! Intente de nuevo!');
-                main();
-        }
-    });
-}
-
-/**
- * menu: menu del programa. controla el flujo del programa.
- */
-function menu() {
-    console.log('\n[1] FLOODING');
-    console.log('[2] DISTANCE VECTOR ROUTING');
-    console.log('[3] REGRESAR A MENU');
-
-    // Leer la opcion del usuario y llamar la funcion correspondente
-    rl.question('Opcion -> ', answer => {
-        switch (answer) {
-            case '1':
-                submenuF();
-                break;
-            case '2':
-                submenuDV();
-                break;
-            case '3':
-                main();
-                break;
-            default:
-                console.log('Opcion invalida! Intente de nuevo!');
-                menu();
-        }
-    });
-}
 
 function submenuDV() {
     console.log('\n[1] MANUAL SETUP');
     console.log('[2] ECHO');
     console.log('[3] SEND ROUTING TABLE');
     console.log('[4] SEND PACKET');
-    console.log('[5] REGRESAR A MENU');
 
     // Leer la opcion del usuario y llamar la funcion correspondente
     rl.question('Opcion -> ', answer => {
@@ -104,8 +49,6 @@ function submenuDV() {
             case '4':
                 sendPacket();
                 break;
-            case '5':
-                menu();
             default:
                 console.log('Opcion invalida! Intente de nuevo!');
                 submenuDV();
@@ -125,7 +68,7 @@ async function loginMain() {
                 console.log('\nSesion iniciada exitosamente!');
                 console.log('Bienvenido de nuevo, ' + username + '!');
                 messageListener();
-                menu(); //redigiendo a menu()
+                submenuDV(); //redigiendo a menu()
             } catch (err) {
                 // Si hay un error, se muestra en pantalla y se vuelve a llamar a login()
                 console.log(err.message)
@@ -141,7 +84,7 @@ async function loginMain() {
 function sendPacket() {
     console.log('\nSEND PACKET:')
     rl.question("Usuario: ", user => {
-        
+
         const userJid = `${user}@${client.domain}`;
         const nodeId = Object.keys(client.names).find(key => client.names[key] === userJid); //agarrar el id del nodo
 
@@ -151,7 +94,7 @@ function sendPacket() {
             const nextHop = client.router.getNextHop(nodeId);
             //agarrar el usuario del nextHop
             const nextHopRouter = client.names[nextHop];
-            console.log(`Destination : ${userJid + ", " + nodeId} NextHop: ${nextHopRouter + ", " +nextHop}`)
+            console.log(`Destination : ${userJid + ", " + nodeId} NextHop: ${nextHopRouter + ", " + nextHop}`)
 
 
             const messageData = {
@@ -188,7 +131,7 @@ function receivePacket(messageData) {
         //reenviar el mensaje
         const nextHop = client.router.getNextHop(nodeId);
         const nextHopRouter = client.names[nextHop];
-        console.log(`Forwarding message from Router ${client.username + ", " +client.router.id} to Router ${nextHopRouter + ", " + nextHop}`);
+        console.log(`Forwarding message from Router ${client.username + ", " + client.router.id} to Router ${nextHopRouter + ", " + nextHop}`);
         client.directMessage(nextHopRouter, JSON.stringify(messageData));
     }
 }
@@ -468,7 +411,19 @@ function messageListener() {
                 try {
                     const messageData = JSON.parse(body);
                     if (messageData.type === "names" && messageData.config) {
-                        console.log(`Names:`, messageData.config);
+                        setUpId(messageData.config);
+                    }
+                    else if (messageData.type === "topo" && messageData.config) {
+                        setUpIdNeighbors(messageData.config);
+                    }
+                    else if (messageData.type === "message" && messageData.headers && messageData.payload) {
+                        receivePacket(messageData);
+                    }
+                    else if (messageData.type === "info" && messageData.headers && messageData.payload) {
+                        updateRoutingTable(messageData);
+                    }
+                    else if (messageData.type === "echo" && messageData.headers && messageData.payload) {
+                        updateNeighbors(messageData);
                     }
                 } catch (error) {
                     console.error(`Error parsing JSON: ${error}`);
@@ -479,4 +434,4 @@ function messageListener() {
 }
 
 //corremos el programa
-main();
+loginMain();
