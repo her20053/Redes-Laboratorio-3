@@ -96,7 +96,7 @@ function messageListener() {
                         setUpIdNeighbors(messageData.config);
                     }
                     else if (messageData.type === "message" && messageData.headers && messageData.payload) {
-                        receivePacket(messageData);
+                        receivePacket(messageData, from);
                     }
 
                 } catch (error) {
@@ -212,6 +212,7 @@ function sendPacket() {
                     headers: {
                         from: `${client.username}@${client.domain}`,
                         to: userJID,
+                        hop_count: 0,
                     },
                     payload: message,
                 };
@@ -227,6 +228,12 @@ function sendPacket() {
             }
         });
     });
+}
+
+function receivePacket(messageData) {
+
+
+
 }
 
 
