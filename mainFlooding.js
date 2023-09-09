@@ -221,10 +221,12 @@ function sendPacket() {
                     const messageData = JSON.stringify(packet);
                     client.directMessage(client.names[neighbor], messageData);
                 }
+                submenuF();
+
             } catch (err) {
                 // Si hay un error, se muestra en pantalla y se vuelve a llamar a login()
                 console.log(err.message)
-                loginMain();
+                submenuF();
             }
         });
     });
@@ -242,15 +244,21 @@ function receivePacket(messageData, origin) {
         payload: messageData.payload,
     };
 
+
+
     if (packet.headers.to === `${client.username}@${client.domain}`) {
         console.log(`\n[ receivePacket ] Mensaje recibido de ${packet.headers.from}: ${packet.payload} \n[ receivePacket ] Con ${packet.headers.hop_count} saltos`);
     }
     else {
+
+        console.log(`\n[ receivePacket ] Mensaje recibido de ${origin} para ${packet.headers.to}: ${packet.payload} \n[ receivePacket ] Con ${packet.headers.hop_count} saltos`);
+
         packet.headers.hop_count += 1;
         const messageData = JSON.stringify(packet);
 
         for (let neighbor of client.router.neighbors) {
-            if (neighbor !== origin) {
+            if (client.names[neighbor] !== origin) {
+                console.log(`[ receivePacket ] Reenviando mensaje a ${neighbor}`);
                 client.directMessage(client.names[neighbor], messageData);
             }
         }
