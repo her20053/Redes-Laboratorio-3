@@ -230,9 +230,31 @@ function sendPacket() {
     });
 }
 
-function receivePacket(messageData) {
+function receivePacket(messageData, origin) {
 
+    const packet = {
+        type: "message",
+        headers: {
+            from: messageData.headers.from,
+            to: messageData.headers.to,
+            hop_count: messageData.headers.hop_count,
+        },
+        payload: messageData.payload,
+    };
 
+    if (packet.headers.to === `${client.username}@${client.domain}`) {
+        console.log(`\n[ receivePacket ] Mensaje recibido de ${packet.headers.from}: ${packet.payload} \n[ receivePacket ] Con ${packet.headers.hop_count} saltos`);
+    }
+    else {
+        packet.headers.hop_count += 1;
+        const messageData = JSON.stringify(packet);
+
+        for (let neighbor of client.router.neighbors) {
+            if (neighbor !== origin) {
+                client.directMessage(client.names[neighbor], messageData);
+            }
+        }
+    }
 
 }
 
