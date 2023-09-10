@@ -1,5 +1,5 @@
 /**
- * main.js: punto de entrada del programa. controla el flujo del programa.
+ * mainDV.js: main para el algortimo de distancia vector
  *
  * @author Jose Hernandez
  * @author Pablo Gonzalez
@@ -25,6 +25,9 @@ let rl = readline.createInterface({
 // Creamos la instancia del cliente
 const client = new Client();
 
+/**
+ * submenuDV: submenu del cliente
+ */
 function submenuDV() {
     console.log('\n[1] MANUAL SETUP');
     console.log('[2] ECHO');
@@ -115,6 +118,10 @@ function sendPacket() {
     });
 }
 
+/**
+ * receivePacket: recibe un mensaje de un usuario
+ * @param {dictionary} messageData : Mensaje recibido
+ */
 function receivePacket(messageData) {
     // console.log(`\n${messageData.headers.from}: ${messageData.payload}`);
     const destination = messageData.headers.to;
@@ -203,7 +210,7 @@ function updateRoutingTable(messageData) {
  */
 function manualSetup() {
     // Read the contents of 'topos.json'
-    fs.readFile('topos2.json', 'utf8', (err, data) => {
+    fs.readFile('./topos2.json', 'utf8', (err, data) => {
         if (err) {
             console.error("Error reading the file:", err);
             return;

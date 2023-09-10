@@ -1,5 +1,5 @@
 /**
- * main.js: punto de entrada del programa. controla el flujo del programa.
+ * mainFloogind.js: main para el algortimo de flooding
  *
  * @author Jose Hernandez
  * @author Pablo Gonzalez
@@ -48,6 +48,9 @@ async function loginMain() {
     });
 }
 
+/**
+ * submenuF: submenu para el algoritmo de flooding
+ */
 function submenuF() {
     console.log('\n[ 1 ] MANUAL SETUP');
     console.log('[ 2 ] SEND PACKET');
@@ -200,6 +203,9 @@ function setUpIdNeighbors(config) {
     console.log(`Routing Table:`, client.router.routingTable);
 }
 
+/**
+ * sendPacket: Envia un paquete a un destino especifico
+ */
 function sendPacket() {
 
     console.log('\nSEND PACKET:')
@@ -232,6 +238,11 @@ function sendPacket() {
     });
 }
 
+/**
+ * receivePacket: Recibe un paquete y lo reenvia a los vecinos
+ * @param {dictionary} messageData : Diccionario con la informacion del paquete
+ * @param {String} origin : Identificador del router que envió el paquete
+ */
 function receivePacket(messageData, origin) {
 
     const packet = {
@@ -266,5 +277,5 @@ function receivePacket(messageData, origin) {
 
 }
 
-
+// Iniciamos el programa
 loginMain();
