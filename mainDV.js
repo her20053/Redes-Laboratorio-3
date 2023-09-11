@@ -88,8 +88,9 @@ function sendPacket() {
     console.log('\nSEND PACKET:')
     rl.question("Usuario: ", user => {
 
+        //agarrar el jid del usuario
         const userJid = `${user}@${client.domain}`;
-        const nodeId = Object.keys(client.names).find(key => client.names[key] === userJid); //agarrar el id del nodo
+        const nodeId = Object.keys(client.names).find(key => client.names[key] === userJid); 
 
         rl.question("Mensaje: ", message => {
 
@@ -99,7 +100,7 @@ function sendPacket() {
             const nextHopRouter = client.names[nextHop];
             console.log(`Destination : ${userJid + ", " + nodeId} NextHop: ${nextHopRouter + ", " + nextHop}`)
 
-
+            //creamos la stanza que lleva el payload del mensaje
             const messageData = {
                 type: "message",
                 headers: {
@@ -110,6 +111,7 @@ function sendPacket() {
                 payload: message,
             };
 
+            //enviamos el mensaje
             client.directMessage(nextHopRouter, JSON.stringify(messageData));
             console.log(`Mensaje enviado a ${nextHopRouter}`);
             submenuDV();
@@ -128,7 +130,7 @@ function receivePacket(messageData) {
 
     //revisar si el mensaje es para el cliente
     if (destination === `${client.username}@${client.domain}`) {
-        console.log(`Mensaje recibido en Router ${client.router.id}: ${messageData.payload}`);
+        console.log(`Mensaje recibido de ${messageData.from}: ${messageData.payload}`);
     }
     else {
 
@@ -159,7 +161,7 @@ function sendRoutingTable() {
         payload: client.router.routingTable,
     };
 
-
+    // Enviamos la tabla de enrutamiento a los vecinos
     for (let neighbor of client.router.neighbors) {
         const neighborJid = client.names[neighbor];
         const infoMessageCopy = { ...infoMessage };
@@ -176,6 +178,7 @@ function sendRoutingTable() {
  */
 function updateRoutingTable(messageData) {
 
+    // Actualizamos la tabla de enrutamiento
     const original_routing_table = client.router.routingTable;
     const neighbor_routing_table = messageData.payload;
     const neighborNodeName = Object.keys(client.names).find(key => client.names[key] === messageData.headers.from);
@@ -197,6 +200,7 @@ function updateRoutingTable(messageData) {
         sendRoutingTable();
 
     }
+    // Si no se actualizo la tabla de enrutamiento, se envia un mensaje de echo
     else {
         console.log("\n - updateRoutingTable(messageData): No se entro al if");
         console.log("\n - updateRoutingTable(messageData): Routing Table Actualizada: ", client.router.routingTable);
@@ -209,24 +213,24 @@ function updateRoutingTable(messageData) {
  * manualSetup: Configura el id y los vecinos del cliente
  */
 function manualSetup() {
-    // Read the contents of 'topos.json'
+    // leer el archivo
     fs.readFile('./topos2.json', 'utf8', (err, data) => {
         if (err) {
             console.error("Error reading the file:", err);
             return;
         }
 
-        // Parse the entire JSON array
+        // Parsear el contenido del archivo como un JSON
         try {
             const jsonArray = JSON.parse(data);
 
-            // Check if the array contains at least two elements
+            // verificar si el array contiene al menos dos elementos
             if (Array.isArray(jsonArray) && jsonArray.length >= 2) {
-                // Retrieve the first two elements as dictionaries
+                // agarrar los primeros dos elementos como diccionarios
                 client.names = jsonArray[0].config;
                 const neighborsDic = jsonArray[1].config;
 
-                // Now you can access client.names and neighborsDic
+                // ahora podemos acceder a client.names y neighborsDic
                 console.log("names:", client.names);
                 console.log("topo:", neighborsDic);
 
@@ -236,9 +240,12 @@ function manualSetup() {
                 console.log(`nodeId:`, nodeId);
                 client.router = new Router(nodeId);
 
+                
                 const searchKey = client.router.id;
                 console.log(`searchKey:`, searchKey);
                 const neighbors = neighborsDic[searchKey];
+
+                // Agregamos los vecinos a la tabla de enrutamiento
                 for (let neighbor of neighbors) {
                     client.router.addNeighbor(neighbor);
                     client.router.routingTable[neighbor] = 1;
@@ -279,6 +286,8 @@ function setUpIdNeighbors(config) {
     const searchKey = client.router.id;
     console.log(`searchKey:`, searchKey);
     const neighbors = config[searchKey];
+
+    // Agregamos los vecinos a la tabla de enrutamiento
     for (let neighbor of neighbors) {
         client.router.addNeighbor(neighbor);
         client.router.routingTable[neighbor] = -1;
@@ -292,6 +301,7 @@ function setUpIdNeighbors(config) {
  */
 async function sendEcho() {
 
+    // Creamos la stanza que lleva el payload del mensaje
     const echoMessage = {
         type: "echo",
         headers: {
@@ -306,6 +316,7 @@ async function sendEcho() {
 
     const neighbors = client.router.neighbors;
 
+    // Enviamos el mensaje de echo a los vecinos
     for (let neighbor of neighbors) {
         const neighborJid = client.names[neighbor];
         const echoMessageCopy = { ...echoMessage };
@@ -330,6 +341,8 @@ async function sendEcho() {
 function updateNeighbors(messageData) {
     console.log("object:", messageData);
     let timeDiff = 0;
+
+    // Actualizar tabla de enrutamiento
     if (messageData.headers.to === `${client.username}@${client.domain}`) {
         const user = messageData.headers.from;
         const timestamp2 = Date.now();
@@ -348,6 +361,7 @@ function updateNeighbors(messageData) {
         client.router.routingTable[nodeId] = timeDiff;
         console.log(`Routing Table Actualizada:`, client.router.routingTable);
 
+    // Actualizar tabla de enrutamiento
     } else {
         console.log("Else");
         // console.log(`Original timestamp1: ${messageData.payload.timestamp1}`);
@@ -382,6 +396,7 @@ function messageListener() {
         throw new Error("Error en la conexion, intenta de nuevo.");
     }
 
+    // escuchar los mensajes que llegan al cliente
     client.xmpp.on("stanza", async (stanza) => {
         // console.log(stanza.toString());
         if (stanza.is("message")) {
@@ -390,6 +405,7 @@ function messageListener() {
             const from = stanza.attrs.from.split("/")[0];
             const body = stanza.getChildText("body");
 
+            //ver si es mensaje
             if (type === "chat" && body) {
                 console.log(`\n${from}: ${body}`);
                 try {
@@ -414,6 +430,7 @@ function messageListener() {
                     console.error(`Error parsing JSON: ${error}`);
                 }
             }
+            // ver si es broadcast
             else if (type === "headline" && body) {
                 try {
                     const messageData = JSON.parse(body);

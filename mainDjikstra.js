@@ -1,5 +1,5 @@
 /**
- * mainFloogind.js: main para el algortimo de flooding
+ * mainDjikstra.js: main para el algortimo de djikstra
  *
  * @author Jose Hernandez
  * @author Pablo Gonzalez
@@ -12,9 +12,9 @@
  */
 
 const Client = require("./client");
-const Router = require("./distanceVector")
 const readline = require('readline');
 const fs = require('fs');
+const { dijkstra } = require('./djikstra');
 
 // Creamos la interfaz para leer datos del usuario.
 let rl = readline.createInterface({
@@ -38,7 +38,7 @@ async function loginMain() {
                 console.log('\nSesion iniciada exitosamente!');
                 console.log('Bienvenido de nuevo, ' + username + '!');
                 messageListener();
-                submenuF(); //redigiendo a menu()
+                submenuD(); //redigiendo a menu()
             } catch (err) {
                 // Si hay un error, se muestra en pantalla y se vuelve a llamar a login()
                 console.log(err.message)
@@ -49,9 +49,9 @@ async function loginMain() {
 }
 
 /**
- * submenuF: submenu para el algoritmo de flooding
+ * submenuD: submenu para el algoritmo de flooding
  */
-function submenuF() {
+function submenuD() {
     console.log('\n[ 1 ] MANUAL SETUP');
     console.log('[ 2 ] SEND PACKET');
 
@@ -60,15 +60,15 @@ function submenuF() {
         switch (answer) {
             case '1':
                 manualSetup();
-                submenuF();
+                submenuD();
                 break;
             case '2':
                 sendPacket();
-                submenuF();
+                submenuD();
                 break;
             default:
                 console.log('Opcion invalida! Intente de nuevo!');
-                submenuF();
+                submenuD();
         }
     });
 }
@@ -126,13 +126,12 @@ function messageListener() {
     });
 }
 
-
 /**
  * manualSetup: Configura el id y los vecinos del cliente
  */
 function manualSetup() {
     // leer el archivo
-    fs.readFile('topos2.json', 'utf8', (err, data) => {
+    fs.readFile('topos3.json', 'utf8', (err, data) => {
         if (err) {
             console.error("Error reading the file:", err);
             return;
@@ -142,33 +141,17 @@ function manualSetup() {
         try {
             const jsonArray = JSON.parse(data);
 
-            // revisar que el JSON tenga al menos dos elementos
+            // revisar que el JSON sea un array y que tenga al menos dos elementos
             if (Array.isArray(jsonArray) && jsonArray.length >= 2) {
                 // agarrar el primer elemento del array
                 client.names = jsonArray[0].config;
-                const neighborsDic = jsonArray[1].config;
-
-                // ahora se configura el id y los vecinos
-                console.log("names:", client.names);
-                console.log("topo:", neighborsDic);
 
                 const searchValue = `${client.username}@${client.domain}`;
-                // console.log(`searchValue:`, searchValue);
                 const nodeId = Object.keys(client.names).find(key => client.names[key] === searchValue);
-                console.log(`nodeId:`, nodeId);
-                client.router = new Router(nodeId);
+                client.router = nodeId;
 
-                const searchKey = client.router.id;
-                console.log(`searchKey:`, searchKey);
-                const neighbors = neighborsDic[searchKey];
-
-                for (let neighbor of neighbors) {
-                    client.router.addNeighbor(neighbor);
-                    client.router.routingTable[neighbor] = 1;
-                    client.router.nextHop[neighbor] = neighbor;
-                }
-                console.log(`Neighbors:`, client.router.neighbors);
-                console.log(`Routing Table:`, client.router.routingTable);
+                console.log("Names:", client.names);
+                console.log("Router ID:", client.router);
 
             } else {
                 console.error("The JSON array does not contain at least two elements.");
@@ -180,110 +163,39 @@ function manualSetup() {
 }
 
 /**
- * setUpId: Configura el id del cliente
- * @param {dictionary} config : Diccionario con la configuracion de los vecinos
- */
-function setUpId(config) {
-    client.names = config;
-    const searchValue = `${client.username}@${client.domain}`;
-    // console.log(`searchValue:`, searchValue);
-    const nodeId = Object.keys(config).find(key => config[key] === searchValue);
-    // console.log(`nodeId:`, nodeId);
-    client.router = new Router(nodeId);
-}
-
-/**
- * setUpIdNeighbors: Configura los vecinos del cliente
- * @param {dictionary} config : Diccionario con la configuracion de los vecinos
- */
-function setUpIdNeighbors(config) {
-    const searchKey = client.router.id;
-    const neighbors = config[searchKey];
-    for (let neighbor of neighbors) {
-        client.router.addNeighbor(neighbor);
-        client.router.routingTable[neighbor] = -1;
-    }
-    console.log(`Neighbors:`, client.router.neighbors);
-    console.log(`Routing Table:`, client.router.routingTable);
-}
-
-/**
- * sendPacket: Envia un paquete a un destino especifico
+ * sendPacket: envia un mensaje a un destinatario
  */
 function sendPacket() {
-
     console.log('\nSEND PACKET:')
     rl.question('Destinatario: ', async to => {
         const userJID = `${to}@${client.domain}`;
         rl.question('Mensaje: ', async message => {
             try {
-                // Se crea el paquete
-                const packet = {
-                    type: "message",
-                    headers: {
-                        from: `${client.username}@${client.domain}`,
-                        to: userJID,
-                        hop_count: 0,
-                    },
-                    payload: message,
-                };
-
-                // Se envia el paquete a los vecinos
-                for (let neighbor of client.router.neighbors) {
+                const shortestPath = dijkstra(client.router, client.names, userJID);
+                if (shortestPath.length > 1) {
+                    const nextHop = shortestPath[1];
+                    const packet = {
+                        type: "message",
+                        headers: {
+                            from: `${client.username}@${client.domain}`,
+                            to: userJID,
+                            hop_count: 0,
+                        },
+                        payload: message,
+                    };
                     const messageData = JSON.stringify(packet);
-                    client.directMessage(client.names[neighbor], messageData);
-                    console.log(`Enviando mensaje a ${neighbor}`)
+                    client.directMessage(client.names[nextHop], messageData);
+                } else {
+                    console.log(`No route found to ${to}`);
                 }
-                submenuF();
-
+                submenuD();
             } catch (err) {
-                // Si hay un error, se muestra en pantalla y se vuelve a llamar a login()
-                console.log(err.message)
-                submenuF();
+                console.log(err.message);
+                submenuD();
             }
         });
     });
 }
 
-/**
- * receivePacket: Recibe un paquete y lo reenvia a los vecinos
- * @param {dictionary} messageData : Diccionario con la informacion del paquete
- * @param {String} origin : Identificador del router que envió el paquete
- */
-function receivePacket(messageData, origin) {
-
-    // Se crea el paquete
-    const packet = {
-        type: "message",
-        headers: {
-            from: messageData.headers.from,
-            to: messageData.headers.to,
-            hop_count: messageData.headers.hop_count,
-        },
-        payload: messageData.payload,
-    };
-
-    // Se envia el paquete a los vecinos
-    if (packet.headers.to === `${client.username}@${client.domain}`) {
-        console.log(`\nMensaje recibido de ${packet.headers.from}: ${packet.payload} Con ${packet.headers.hop_count} saltos`);
-        console.log(`Mensaje recibido de ${packet.headers.from}: ${packet.payload}`)
-    }
-    else {
-
-        console.log(`\nMensaje recibido de ${origin} para ${packet.headers.to}: ${packet.payload} Con ${packet.headers.hop_count} saltos`);
-
-        packet.headers.hop_count += 1;
-        const messageData = JSON.stringify(packet);
-
-        for (let neighbor of client.router.neighbors) {
-            if (client.names[neighbor] !== origin) {
-                console.log(`Reenviando mensaje a ${neighbor}`);
-                client.directMessage(client.names[neighbor], messageData);
-            }
-        }
-    }
-
-}
-
-// Iniciamos el programa
+//corremos el programa
 loginMain();

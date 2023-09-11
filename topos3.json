@@ -1,0 +1,11 @@
+[
+    {"type": "names", "config": {"A": "messi10@alumchat.xyz", "B": "joehueco@alumchat.xyz", "C": "pablishi@alumchat.xyz"}},
+    {
+        "type": "topo",
+        "config": {
+            "A": {"B": 2, "C": 5},
+            "B": {"A": 2, "C": 1},
+            "C": {"A": 5, "B": 1}
+        }
+    }
+]
