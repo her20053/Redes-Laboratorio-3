@@ -130,7 +130,7 @@ function receivePacket(messageData) {
 
     //revisar si el mensaje es para el cliente
     if (destination === `${client.username}@${client.domain}`) {
-        console.log(`Mensaje recibido de ${messageData.from}: ${messageData.payload}`);
+        console.log(`Mensaje recibido de ${messageData.headers.from}: ${messageData.payload}`);
     }
     else {
 
