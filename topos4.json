@@ -1,5 +1,5 @@
 [
-    {"type":"names", "config":{"C": "smi20373@alumchat.xyz", "D": "per20204@alumchat.xyz", "E": "elv20725@alumchat.xyz", "F": "mom20067@alumchat.xyz", "G": "val20441@alumchat.xyz", "I": "mon20309@alumchat.xyz", "J": "esc20936@alumchat.xyz", "K": "dele19019@alumchat.xyz", "L": "san20226@alumchat.xyz", "M": "san191517@alumchat.xyz", "N": "gir20029@alumchat.xyz", "O": "val20159@alumchat.xyz", "P": "arr20188@alumchat.xyz", "Q": "her20053@alumchat.xyz", "R": "pag20634@alumchat.xyz", "S": "gon20335@alumchat.xyz", "T": "mol20211@alumchat.xyz", "V": "lay201281@alumchat.xyz", "W": "dav201055@alumchat.xyz", "Y": "vel201011@alumchat.xyz", "Z": "gal20079@alumchat.xyz", "a": "rio20979@alumchat.xyz", "b": "hig20460@alumchat.xyz", "c": "gon20362@alumchat.xyz", "d": "ram19946@alumchat.xyz"} },
+    {"type":"names", "config":{"A": "mom20067@alumchat.xyz", "B": "her20053@alumchat.xyz", "C": "ram19946@alumchat.xyz", "D": "rio20979@alumchat.xyz", "E": "gon20362@alumchat.xyz"} },
 
-    {"type":"topo", "config":{ "C": [ "D"], "D": ["C", "E"], "E": ["D", "F"], "F": ["E", "G"], "G": ["F", "I"], "I": ["G", "J"], "J": ["I", "K"], "K": ["J", "L"], "L": ["K", "M"], "M": ["L", "N"], "N": ["M", "O"], "O": ["N", "P"], "P": ["O", "Q"], "Q": ["P", "R"], "R": ["Q", "S"], "S": ["R", "T"], "T": ["S", "V"], "V": ["T", "W"], "W": ["V", "Y"], "Y": ["W", "Z"], "Z": ["Y", "a"], "a": ["Z", "b"], "b": ["a", "c"], "c": ["b", "d"], "d": ["c"] } }
+    {"type":"topo", "config":{"A": ["B"], "B": ["A", "C"], "C": ["B", "D"], "D": ["C", "E"], "E":["D"]} }
 ]
