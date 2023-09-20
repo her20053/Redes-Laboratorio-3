@@ -132,7 +132,7 @@ function messageListener() {
  */
 function manualSetup() {
     // leer el archivo
-    fs.readFile('topos2.json', 'utf8', (err, data) => {
+    fs.readFile('topos4.json', 'utf8', (err, data) => {
         if (err) {
             console.error("Error reading the file:", err);
             return;
@@ -232,7 +232,7 @@ function sendPacket() {
                 for (let neighbor of client.router.neighbors) {
                     const messageData = JSON.stringify(packet);
                     client.directMessage(client.names[neighbor], messageData);
-                    console.log(`Enviando mensaje a ${neighbor}`)
+                    console.log(`Enviando mensaje a ${neighbor + ", " + client.names[neighbor]}`)
                 }
                 submenuF();
 
@@ -277,7 +277,7 @@ function receivePacket(messageData, origin) {
 
         for (let neighbor of client.router.neighbors) {
             if (client.names[neighbor] !== origin) {
-                console.log(`Reenviando mensaje a ${neighbor}`);
+                console.log(`Reenviando mensaje a ${neighbor + "," + client.names[neighbor]}`);
                 client.directMessage(client.names[neighbor], messageData);
             }
         }
